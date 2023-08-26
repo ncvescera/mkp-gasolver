@@ -1,4 +1,5 @@
 from typing import List
+import numpy as np
 
 
 class MKProblem():
@@ -24,22 +25,25 @@ class MKProblem():
         items = []
         with open(fpath, 'r') as f:
             num_f = int(f.readline().strip())
-            W = f.readline().strip().split(delimiter)
+            W = np.array(f.readline().strip().split(delimiter),
+                         dtype=np.float32)
 
             assert len(W) == num_f
 
             num_items = int(f.readline().strip())
 
             for i in range(num_items):
-                tmp_item = f.readline().strip().split(delimiter)
+                tmp_item = np.array(f.readline().strip().split(delimiter),
+                                    dtype=np.float32)
                 assert len(tmp_item) == num_f
 
                 items.append(tmp_item)
 
-            sol_1 = f.readline().strip().split(delimiter)
+            sol_1 = np.array(f.readline().strip().split(delimiter),
+                             dtype=np.float32)
             assert len(sol_1) == num_items
 
-            sol_2 = int(f.readline().strip())
+            sol_2 = float(f.readline().strip())
 
         return MKProblem(num_f=num_f,
                          W=W,
