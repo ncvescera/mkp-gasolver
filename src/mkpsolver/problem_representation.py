@@ -19,6 +19,7 @@ class MKProblem():
         self.sol2 = sol2
         self.num_items = num_items if num_items is not None else len(items)
 
+        # generating DataFrame using a ndarry (item represented as matrix)
         self.df = pd.DataFrame(np.array(items),
                                columns=[f"f{i}" for i in range(len(self.W))])
         self.df = pd.concat(
@@ -34,13 +35,15 @@ class MKProblem():
     @classmethod
     def from_file(cls, fpath: str, delimiter: str = ','):
         num_f = None
-        W = None
+        W = None  # upper constraint limits
         items = []
+
         with open(fpath, 'r') as f:
             num_f = int(f.readline().strip())
             W = np.array(f.readline().strip().split(delimiter),
                          dtype=np.float32)
 
+            # make shure upper constriant limits match the num features len
             assert len(W) == num_f
 
             num_items = int(f.readline().strip())
@@ -48,12 +51,16 @@ class MKProblem():
             for i in range(num_items):
                 tmp_item = np.array(f.readline().strip().split(delimiter),
                                     dtype=np.float32)
+
+                # make shure item features match the num features len
                 assert len(tmp_item) == num_f
 
                 items.append(tmp_item)
 
             values = np.array(f.readline().strip().split(delimiter),
                               dtype=np.float32)
+
+            # make shure values match the item number
             assert len(values) == num_items
 
             sol_2 = float(f.readline().strip())
