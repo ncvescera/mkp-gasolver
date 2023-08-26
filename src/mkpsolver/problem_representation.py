@@ -1,10 +1,15 @@
-import numpy as np
-import argparse
+from typing import List
 
 
 class MKProblem():
 
-    def __init__(self, num_f, W, items, sol1, sol2, num_items=None):
+    def __init__(self,
+                 num_f: int,
+                 W: List[float],
+                 items: List[List[float]],
+                 sol1: List[float],
+                 sol2: float,
+                 num_items: None | int = None):
         self.num_f = num_f
         self.W = W
         self.items = items
@@ -13,7 +18,7 @@ class MKProblem():
         self.num_items = num_items if num_items is not None else len(items)
 
     @classmethod
-    def from_file(cls, fpath):
+    def from_file(cls, fpath: str):
         num_f = None
         W = None
         items = []
@@ -60,18 +65,3 @@ class MKProblem():
                 f"{repr_items()}\n"
                 f"SOL1: {self.sol1}\n"
                 f"SOL2: {self.sol2}")
-
-
-def main(args):
-    problem = MKProblem.from_file(args.path)
-    print(problem)
-
-
-if __name__ == "__main__":
-    parser = argparse.ArgumentParser(
-        description='Multidimensional Knapsack Problem Solver')
-
-    parser.add_argument('path', type=str, help='Instance File Path')
-    args = parser.parse_args()
-
-    main(args)
