@@ -18,25 +18,25 @@ class MKProblem():
         self.num_items = num_items if num_items is not None else len(items)
 
     @classmethod
-    def from_file(cls, fpath: str):
+    def from_file(cls, fpath: str, delimiter: str = ','):
         num_f = None
         W = None
         items = []
         with open(fpath, 'r') as f:
             num_f = int(f.readline().strip())
-            W = f.readline().strip().split(',')
+            W = f.readline().strip().split(delimiter)
 
             assert len(W) == num_f
 
             num_items = int(f.readline().strip())
 
             for i in range(num_items):
-                tmp_item = f.readline().strip().split(',')
+                tmp_item = f.readline().strip().split(delimiter)
                 assert len(tmp_item) == num_f
 
                 items.append(tmp_item)
 
-            sol_1 = f.readline().strip().split(',')
+            sol_1 = f.readline().strip().split(delimiter)
             assert len(sol_1) == num_items
 
             sol_2 = int(f.readline().strip())
