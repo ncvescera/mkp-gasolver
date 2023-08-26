@@ -1,5 +1,6 @@
 from typing import List
 import numpy as np
+import pandas as pd
 
 
 class MKProblem():
@@ -8,15 +9,27 @@ class MKProblem():
                  num_f: int,
                  W: List[float],
                  items: List[List[float]],
-                 sol1: List[float],
+                 values: List[float],
                  sol2: float,
                  num_items: None | int = None):
         self.num_f = num_f
         self.W = W
         self.items = items
-        self.sol1 = sol1
+        self.values = values
         self.sol2 = sol2
         self.num_items = num_items if num_items is not None else len(items)
+
+        self.df = pd.DataFrame(np.array(items),
+                               columns=[f"f{i}" for i in range(len(self.W))])
+        self.df = pd.concat(
+            [self.df, pd.DataFrame(self.values, columns=['Values'])], axis=1)
+
+    def get_dim(self):
+        return self.num_items
+
+    def objective_function(self, x):
+        # x è una soluzione con 0 elemento non preso, 1 preso
+        return self.df[x == 1]['Values'].sum()
 
     @classmethod
     def from_file(cls, fpath: str, delimiter: str = ','):
@@ -39,33 +52,25 @@ class MKProblem():
 
                 items.append(tmp_item)
 
-            sol_1 = np.array(f.readline().strip().split(delimiter),
-                             dtype=np.float32)
-            assert len(sol_1) == num_items
+            values = np.array(f.readline().strip().split(delimiter),
+                              dtype=np.float32)
+            assert len(values) == num_items
 
             sol_2 = float(f.readline().strip())
 
         return MKProblem(num_f=num_f,
                          W=W,
                          items=items,
-                         sol1=sol_1,
+                         values=values,
                          sol2=sol_2,
                          num_items=num_items)
 
     def __str__(self):
 
-        def repr_items():
-            result = "ITEMS:\n"
-            for item in self.items:
-                result += f"   - {item}\n"
-
-            result = result[:-1]
-            return result
-
         return ("-- MKProblem --\n\n"
                 f"NUM FEATURES: {self.num_f}\n"
                 f"Ws: {self.W}\n"
                 f"NUM ITEMS: {self.num_items}\n"
-                f"{repr_items()}\n"
-                f"SOL1: {self.sol1}\n"
+                f"ITEMS:\n{self.df}\n"
+                f"VALUES: {self.values}\n"
                 f"SOL2: {self.sol2}")
