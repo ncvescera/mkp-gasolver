@@ -1,4 +1,5 @@
 from typing import List
+import numpy.typing as npt
 import numpy as np
 import pandas as pd
 
@@ -23,14 +24,14 @@ class MKProblem():
         self.df = pd.DataFrame(np.array(items),
                                columns=[f"f{i}" for i in range(len(self.W))])
         self.df = pd.concat(
-            [self.df, pd.DataFrame(self.values, columns=['Values'])], axis=1)
+            [self.df, pd.DataFrame(self.values, columns=['Value'])], axis=1)
 
     def get_dim(self):
         return self.num_items
 
-    def objective_function(self, x):
+    def objective_function(self, x: npt.NDArray[0 | 1]):
         # x è una soluzione con 0 elemento non preso, 1 preso
-        return self.df[x == 1]['Values'].sum()
+        return self.df[x == 1]['Value'].sum()
 
     @classmethod
     def from_file(cls, fpath: str, delimiter: str = ','):
