@@ -27,21 +27,31 @@ class GeneticAlgorithm():
 
         for _ in range(num_elem):
             tmp_sol = np.zeros(self.num_items)
+
+            # list of indexes (e.g. 1 means df[1])
             T = list(range(self.num_items))
+
+            # temporary actual constrints sum
             R = np.zeros(len(self.problem.W))
+
+            # randomly extract an item
             j = T.pop(random.randint(0, len(T) - 1))
             item = self.problem.df.loc[:, self.problem.df.columns !=
                                        'Value'].loc[j].to_numpy()
 
+            # try to add extracted item, then extract a new one and so on
             while all(R + item <= self.problem.W):
                 tmp_sol[j] = 1
                 R = R + item
+
+                # no more items left, continue to new solution
                 if len(T) <= 0:
                     break
 
                 j = T.pop(random.randrange(len(T)))
                 item = self.problem.df.loc[:, self.problem.df.columns !=
                                            'Value'].loc[j].to_numpy()
+
             self.population.append(tmp_sol)
 
     def select_mating_pool(self):
