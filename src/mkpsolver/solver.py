@@ -19,13 +19,13 @@ class GeneticAlgorithm():
         self.pmut = pmut
         self.num_gen = num_gen
 
-    def init_population(self, num_elem: int = 15) -> List[Solution]:
+    def init_population(self, num_elem: int = 16) -> List[Solution]:
         self.population = []
-        self.f_obj = np.zeros(self.num_items)
+        self.f_obj = np.zeros(num_elem)
         self.best = None
         self.best_f = float('inf')  # huge number
 
-        for _ in range(num_elem):
+        for i in range(num_elem):
             tmp_sol = np.zeros(self.num_items)
 
             # list of indexes (e.g. 1 means df[1])
@@ -53,16 +53,37 @@ class GeneticAlgorithm():
                                            'Value'].loc[j].to_numpy()
 
             self.population.append(tmp_sol)
+            self.f_obj[i] = self.problem.objective_function(
+                tmp_sol)  # TODO: usare dict ?
 
     def select_mating_pool(self):
 
         def roulette_wheel():
             raise NotImplementedError
 
-        def tournament():
-            raise NotImplementedError
+        def tournament(k=5):
+            random_select_items = [
+                random.randint(0,
+                               len(self.population) - 1) for _ in range(k)
+            ]
 
-        tournament()
+            tmp = {i: self.f_obj[i] for i in random_select_items}
+
+            max_index = max(tmp, key=tmp.get)
+
+            return self.population[max_index]
+
+        mating_pool = []
+
+        for i in range(len(self.population) // 2):
+            c1 = tournament()
+            c2 = tournament()
+            mating_pool.append((
+                c1,
+                c2,
+            ))
+
+        return mating_pool
 
     def do_crossover(
             self, mating_pool: List[Tuple[Solution,
