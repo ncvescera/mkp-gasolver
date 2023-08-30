@@ -84,8 +84,9 @@ class GeneticAlgorithm():
         # maximize the objective function
         if fx > self.best_f:
             self.best_f = fx
-            self.best = x
+            self.best = x.copy()  # save actuale solution, not reference
             print(f"new best {fx} @ gent: {gen}")
+            print(self.best)
             self.improvements.append((
                 gen,
                 fx,
