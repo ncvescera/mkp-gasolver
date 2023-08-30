@@ -1,5 +1,4 @@
-from typing import List
-import numpy.typing as npt
+from mkpsolver.typing import List, Tuple, Solution
 import numpy as np
 import pandas as pd
 
@@ -26,12 +25,12 @@ class MKProblem():
         self.df = pd.concat(
             [self.df, pd.DataFrame(self.values, columns=['Value'])], axis=1)
 
-    def get_dim(self):
+    def get_dim(self) -> int:
         return self.num_items
 
-    def objective_function(self, x: npt.NDArray[0 | 1]):
+    def objective_function(self, x: Solution) -> float:
         # x è una soluzione con 0 elemento non preso, 1 preso
-        return self.df[x == 1]['Value'].sum()
+        return self.df[x == 1]['Value'].sum()  # TODO: ricontrollare
 
     @classmethod
     def from_file(cls, fpath: str, delimiter: str = ','):

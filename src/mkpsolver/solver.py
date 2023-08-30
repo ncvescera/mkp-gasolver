@@ -14,39 +14,45 @@ class GeneticAlgorithm():
             pcross=.9,
             pmut=.01):
 
-        self.problem = problem
+        self.problem: MKProblem = problem
         self.num_items = problem.get_dim()
         self.num_elem = num_elem
         self.pcross = pcross
         self.pmut = pmut
         self.num_gen = num_gen
 
-    def solve(self):
-        self.improvements = []
+    def solve(self) -> dict:  # TODO: migliorare typing hint
+        self.improvements: List[Tuple[int, float]] = []
         self.init_population()
 
         # print(self.population)
 
         for gen in range(1, self.num_gen + 1):
-            mating_pool = self.select_mating_pool()
-            children = self.do_crossover(mating_pool)
+            mating_pool: List[Tuple[Solution,
+                                    Solution]] = self.select_mating_pool()
+            children: List[Solution] = self.do_crossover(mating_pool)
             self.do_mutation(children)
+            self.repair_operator(children)
             self.select_new_population(children, gen)
 
-        return None, None, None  # TODO: completare
+        return {
+            "best": self.best,
+            "best_fitness": self.best_f,
+            "improvements": self.improvements
+        }
 
     def init_population(self):
-        self.population = []
+        self.population: List[Solution] = []
         # self.f_obj = np.zeros(self.num_elem)
-        self.f_obj = list(np.zeros(self.num_elem))
-        self.best = None
-        self.best_f = float('-inf')  # huge number
+        self.f_obj: List[float] = list(np.zeros(self.num_elem))
+        self.best: Solution = None
+        self.best_f: float = float('-inf')  # tiny number
 
         for i in range(self.num_elem):
-            tmp_sol = np.zeros(self.num_items)
+            tmp_sol: Solution = np.zeros(self.num_items)
 
             # list of indexes (e.g. 1 means df[1])
-            T = list(range(self.num_items))
+            T: List[int] = list(range(self.num_items))
 
             # temporary actual constrints sum
             R = np.zeros(len(self.problem.W))
@@ -162,9 +168,78 @@ class GeneticAlgorithm():
                 if random.random() < self.pmut:
                     child[i] = int(not child[i])
 
-    # TODO: compleatre
-    def repair_operator(self) -> Solution:
-        raise NotImplementedError
+    def repair_operator(self, children: List[Solution]) -> Solution:
+        sorted_value_objects_indexes = self.problem.df.sort_values(
+            by='Value', ascending=True).index.to_numpy()
+        # print(sorted_value_objects_indexes)
+
+        for child in children:
+            child_parameters = self.problem.df.loc[:,
+                                                   self.problem.df.columns !=
+                                                   'Value'].loc[
+                                                       child ==
+                                                       1].sum().to_numpy()
+            # good child, check next child
+            if all(child_parameters <= self.problem.W):
+                continue
+
+            old_child = child.copy()
+
+            # print("BAD CHILD:", old_child)
+            # print("CP       :", child_parameters)
+            # print("W        :", self.problem.W)
+
+            # DROP PHASE
+            # delete high Values objects until solution is feasible
+            i = len(sorted_value_objects_indexes) - 1  # last element
+            while any(child_parameters > self.problem.W):
+                # delete item from solution
+                child[sorted_value_objects_indexes[i]] = 0
+
+                # update parameters
+                child_parameters = self.problem.df.loc[:, self.problem.df.
+                                                       columns != 'Value'].loc[
+                                                           child ==
+                                                           1].sum().to_numpy()
+                i = i - 1
+
+            # print("--- DROP PHASE ---")
+            # print("FIX CHILD:", child)
+            # print("CP       :", child_parameters)
+            # print("W        :", self.problem.W)
+            # print("DEL ELEMS:", (child != old_child).sum())
+
+            # ADD PAHSE
+            # trying to add low Values objects if possible
+            i = 0
+            while all(child_parameters <= self.problem.W):
+                old_child = child.copy()
+
+                # add item to solution
+                child[sorted_value_objects_indexes[i]] = 1
+
+                # update parameters
+                child_parameters = self.problem.df.loc[:, self.problem.df.
+                                                       columns != 'Value'].loc[
+                                                           child ==
+                                                           1].sum().to_numpy()
+                i = i + 1
+
+            # print("--- ADD  PHASE ---")
+            # print("LAST CHILD:", child)
+            # print("   CP:", child_parameters)
+            # print("OLD CHILD :", old_child)
+            # print(
+            #     "   CP:",
+            #     self.problem.df.loc[:, self.problem.df.columns != 'Value'].loc[
+            #         old_child == 1].sum().to_numpy())
+            # print("W         :", self.problem.W)
+            # print("NEW = OLD ?:", True if i != 0 else False)
+            # print()
+
+            # forse va sempre fatto 🤔
+            if i != 0:
+                child = old_child
 
     def select_new_population(self, children: List[Solution], gen: int):
 
