@@ -1,5 +1,5 @@
 import numpy as np
-from mkpsolver.typing import List, Tuple, Solution
+from mkpsolver.typing import List, Tuple, Dict, Solution
 from mkpsolver.problem_representation import MKProblem
 import random
 import logging as lg
@@ -28,7 +28,7 @@ class GeneticAlgorithm():
                  f"pmut={self.pmut};"
                  f"num_gen={self.num_gen}")
 
-    def solve(self) -> dict:  # TODO: migliorare typing hint
+    def solve(self) -> Dict[str, any]:
         self.improvements: List[Tuple[int, float]] = []
 
         self.init_population()
