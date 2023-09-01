@@ -86,7 +86,7 @@ class GeneticAlgorithm():
             self.best_f = fx
             self.best = x.copy()  # save actuale solution, not reference
             print(f"new best {fx} @ gent: {gen}")
-            print(self.best)
+            # print(self.best)
             self.improvements.append((
                 gen,
                 fx,
