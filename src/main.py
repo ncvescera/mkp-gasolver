@@ -2,14 +2,12 @@ import numpy as np
 import argparse
 from mkpsolver.problem_representation import MKProblem
 from mkpsolver.solver import GeneticAlgorithm
+import logging
 
 
 def main(args):
     problem = MKProblem.from_file(args.path)
     print(problem)
-
-    # TEST: objective function
-    print(problem.objective_function(np.array([1, 1, 0, 0, 0, 0, 0, 0, 0, 0])))
 
     solver = GeneticAlgorithm(problem,
                               pcross=args.crossover_probability,
@@ -54,6 +52,15 @@ if __name__ == "__main__":
                         type=int,
                         help='Number of generations')
 
+    parser.add_argument('-log',
+                        '--log_level',
+                        default="WARNINGS",
+                        type=str,
+                        choices=['DEBUG', 'INFO', 'WARNINGS'],
+                        help='Logging Level')
+
     args = parser.parse_args()
+    logging.basicConfig(encoding='utf-8',
+                        level=getattr(logging, args.log_level, None))
 
     main(args)

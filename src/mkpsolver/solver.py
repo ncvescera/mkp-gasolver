@@ -2,6 +2,7 @@ import numpy as np
 from mkpsolver.typing import List, Tuple, Solution
 from mkpsolver.problem_representation import MKProblem
 import random
+import logging as lg
 
 
 class GeneticAlgorithm():
@@ -21,13 +22,20 @@ class GeneticAlgorithm():
         self.pmut = pmut
         self.num_gen = num_gen
 
+        lg.debug(f"SOLVER INSTANCE: num_items={self.num_items};"
+                 f"num_elem={self.num_elem};"
+                 f"pcross={self.pcross};"
+                 f"pmut={self.pmut};"
+                 f"num_gen={self.num_gen}")
+
     def solve(self) -> dict:  # TODO: migliorare typing hint
         self.improvements: List[Tuple[int, float]] = []
+
         self.init_population()
 
-        # print(self.population)
-
         for gen in range(1, self.num_gen + 1):
+            lg.debug(f"STARTING GEN {gen}")
+
             mating_pool: List[Tuple[Solution,
                                     Solution]] = self.select_mating_pool()
             children: List[Solution] = self.do_crossover(mating_pool)
@@ -42,8 +50,9 @@ class GeneticAlgorithm():
         }
 
     def init_population(self):
+        lg.debug("INITIAL POPULATION: Running")
+
         self.population: List[Solution] = []
-        # self.f_obj = np.zeros(self.num_elem)
         self.f_obj: List[float] = list(np.zeros(self.num_elem))
         self.best: Solution = None
         self.best_f: float = float('-inf')  # tiny number
@@ -76,17 +85,24 @@ class GeneticAlgorithm():
                                            'Value'].loc[j].to_numpy()
 
             self.population.append(tmp_sol)
-            self.f_obj[i] = self.problem.objective_function(
-                tmp_sol)  # TODO: usare dict ?
+            self.f_obj[i] = self.problem.objective_function(tmp_sol)
             self.update_best(tmp_sol, self.f_obj[i], 0)
 
+        lg.debug("INITIAL POPULATION")
+        for elem in self.population:
+            lg.debug(f"- {list(elem)}")
+
     def update_best(self, x: Solution, fx: float, gen: int):
+        lg.debug("UPDATE BEST: running")
+
         # maximize the objective function
         if fx > self.best_f:
             self.best_f = fx
             self.best = x.copy()  # save actuale solution, not reference
-            print(f"new best {fx} @ gent: {gen}")
-            # print(self.best)
+
+            lg.info(f"new best {fx} @ gent: {gen}")
+            lg.debug(f"NEW BEST: {self.best}")
+
             self.improvements.append((
                 gen,
                 fx,
@@ -117,6 +133,8 @@ class GeneticAlgorithm():
 
             return self.population[max_index]
 
+        lg.debug("MATING POOL: Running")
+
         mating_pool = []
 
         for i in range(len(self.population) // 2):
@@ -126,6 +144,8 @@ class GeneticAlgorithm():
                 c1,
                 c2,
             ))
+
+            lg.debug(f"- {c1} {c2}")
 
         return mating_pool
 
@@ -147,12 +167,17 @@ class GeneticAlgorithm():
 
             return c
 
+        lg.debug("CROSSOVER: Running")
+
         children = []
 
         for s1, s2 in mating_pool:
             if random.random() < self.pcross:
                 c = uniform_crossover_operator(s1, s2)
                 children.append(c)
+
+                lg.debug(f"{s1} x {s2} = {c}")
+
                 continue
 
             children.append(s1)
@@ -164,15 +189,25 @@ class GeneticAlgorithm():
         '''
         Randomly flip bits according to pmut probability
         '''
-        for child in children:  # TODO: ricontrollare
+        lg.debug("MUTATION: Running")
+
+        for child in children:
             for i in range(len(child)):
                 if random.random() < self.pmut:
+                    to_log = f"{child} -> "
+
                     child[i] = int(not child[i])
 
+                    to_log += f"{child}"
+                    lg.debug(to_log)
+
     def repair_operator(self, children: List[Solution]) -> Solution:
+        lg.debug("REPAIR: Running")
+
         sorted_value_objects_indexes = self.problem.df.sort_values(
             by='Value', ascending=True).index.to_numpy()
-        # print(sorted_value_objects_indexes)
+
+        lg.debug(f"sorted indexes: {sorted_value_objects_indexes}")
 
         for child in children:
             child_parameters = self.problem.df.loc[:,
@@ -186,9 +221,9 @@ class GeneticAlgorithm():
 
             old_child = child.copy()
 
-            # print("BAD CHILD:", old_child)
-            # print("CP       :", child_parameters)
-            # print("W        :", self.problem.W)
+            lg.debug(f"BAD CHILD: {old_child}")
+            lg.debug(f"CP       : {child_parameters}")
+            lg.debug(f"W        : {self.problem.W}")
 
             # DROP PHASE
             # delete high Values objects until solution is feasible
@@ -204,11 +239,11 @@ class GeneticAlgorithm():
                                                            1].sum().to_numpy()
                 i = i - 1
 
-            # print("--- DROP PHASE ---")
-            # print("FIX CHILD:", child)
-            # print("CP       :", child_parameters)
-            # print("W        :", self.problem.W)
-            # print("DEL ELEMS:", (child != old_child).sum())
+            lg.debug("--- DROP PHASE ---")
+            lg.debug(f"FIX CHILD: {child}")
+            lg.debug(f"CP       : {child_parameters}")
+            lg.debug(f"W        : {self.problem.W}")
+            lg.debug(f"DEL ELEMS: {(child != old_child).sum()}")
 
             # ADD PAHSE
             # trying to add low Values objects if possible
@@ -226,17 +261,16 @@ class GeneticAlgorithm():
                                                            1].sum().to_numpy()
                 i = i + 1
 
-            # print("--- ADD  PHASE ---")
-            # print("LAST CHILD:", child)
-            # print("   CP:", child_parameters)
-            # print("OLD CHILD :", old_child)
-            # print(
-            #     "   CP:",
-            #     self.problem.df.loc[:, self.problem.df.columns != 'Value'].loc[
-            #         old_child == 1].sum().to_numpy())
-            # print("W         :", self.problem.W)
-            # print("NEW = OLD ?:", True if i != 0 else False)
-            # print()
+            lg.debug("--- ADD  PHASE ---")
+            lg.debug(f"LAST CHILD: {child}")
+            lg.debug(f"   CP: {child_parameters}")
+            lg.debug(f"OLD CHILD : {old_child}")
+            lg.debug(
+                f"   CP: {self.problem.df.loc[:, self.problem.df.columns != 'Value'].loc[old_child == 1].sum().to_numpy()}"
+            )
+
+            lg.debug(f"W         : {self.problem.W}")
+            lg.debug(f"NEW = OLD ?: {True if i != 0 else False}")
 
             # forse va sempre fatto 🤔
             if i != 0:
@@ -259,6 +293,12 @@ class GeneticAlgorithm():
             self.population = [total_solutions[i] for i in best_indexes]
             self.f_obj = [total_fintesses[i] for i in best_indexes]
 
+            lg.debug("population:")
+            for elem in self.population:
+                lg.debug(f"- {list(elem)}")
+            lg.debug(f"fitnesses: {self.f_obj}")
+
             self.update_best(self.population[0], self.f_obj[0], gen)
 
+        lg.debug("NEW POPULATION: Running")
         select_best()
