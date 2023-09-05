@@ -20,10 +20,15 @@ class MKProblem():
         self.num_items = num_items if num_items is not None else len(items)
 
         # generating DataFrame using a ndarry (item represented as matrix)
-        self.df = pd.DataFrame(np.array(items),
-                               columns=[f"f{i}" for i in range(len(self.W))])
+        self.df = pd.DataFrame(np.array(items)).transpose()
+        self.df.columns = [f"f{i}" for i in range(len(self.W))]
+
         self.df = pd.concat(
             [self.df, pd.DataFrame(self.values, columns=['Value'])], axis=1)
+        # self.df = pd.DataFrame(np.array(items),
+        #                        columns=[f"f{i}" for i in range(len(self.W))])
+        # self.df = pd.concat(
+        #     [self.df, pd.DataFrame(self.values, columns=['Value'])], axis=1)
 
     def get_dim(self) -> int:
         return self.num_items
@@ -39,37 +44,37 @@ class MKProblem():
         items = []
 
         with open(fpath, 'r') as f:
-            num_f = int(f.readline().strip())
-            W = np.array(f.readline().strip().split(delimiter),
-                         dtype=np.float32)
+            num_items = int(f.readline().strip())
+            values = np.array(f.readline().strip().split(delimiter),
+                              dtype=np.float32)
 
             # make shure upper constriant limits match the num features len
-            assert len(W) == num_f
+            assert len(values) == num_items
 
-            num_items = int(f.readline().strip())
+            num_f = int(f.readline().strip())
 
-            for i in range(num_items):
+            for i in range(num_f):
                 tmp_item = np.array(f.readline().strip().split(delimiter),
                                     dtype=np.float32)
 
                 # make shure item features match the num features len
-                assert len(tmp_item) == num_f
+                assert len(tmp_item) == num_items
 
                 items.append(tmp_item)
 
-            values = np.array(f.readline().strip().split(delimiter),
-                              dtype=np.float32)
+            W = np.array(f.readline().strip().split(delimiter),
+                         dtype=np.float32)
 
             # make shure values match the item number
-            assert len(values) == num_items
+            assert len(W) == num_f
 
-            sol_2 = float(f.readline().strip())
+            sol = float(f.readline().strip())
 
         return MKProblem(num_f=num_f,
                          W=W,
                          items=items,
                          values=values,
-                         sol2=sol_2,
+                         sol2=sol,
                          num_items=num_items)
 
     def __str__(self):
