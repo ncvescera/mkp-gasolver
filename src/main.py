@@ -1,4 +1,3 @@
-import numpy as np
 import argparse
 from mkpsolver.problem_representation import MKProblem
 from mkpsolver.solver import GeneticAlgorithm
@@ -13,7 +12,8 @@ def main(args):
                               pcross=args.crossover_probability,
                               pmut=args.mutation_probability,
                               num_elem=args.population_lenght,
-                              num_gen=args.number_generation)
+                              num_gen=args.number_generation,
+                              tk=args.tournament_k)
     solution = solver.solve()
     solution_items = problem.df[solution["best"] == 1]
 
@@ -51,7 +51,11 @@ if __name__ == "__main__":
                         default=100,
                         type=int,
                         help='Number of generations')
-
+    parser.add_argument('-tk',
+                        '--tournament_k',
+                        default=5,
+                        type=int,
+                        help='Tournament random solution to select')
     parser.add_argument('-log',
                         '--log_level',
                         default="WARNINGS",

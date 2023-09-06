@@ -13,7 +13,8 @@ class GeneticAlgorithm():
             num_elem=16,
             num_gen=100,
             pcross=.9,
-            pmut=.01):
+            pmut=.01,
+            tk=5):
 
         self.problem: MKProblem = problem
         self.num_items = problem.get_dim()
