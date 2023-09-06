@@ -6,7 +6,7 @@ import logging as lg
 
 
 class GeneticAlgorithm():
-    # Gli elementi vengono rappresentati con 0 NON LO PRENDO, 1 LO PRENDO
+
     def __init__(
             self,
             problem: MKProblem,  # TODO: si può omettere ?
@@ -248,34 +248,40 @@ class GeneticAlgorithm():
 
             # ADD PAHSE
             # trying to add low Values objects if possible
-            # i = 0
+            i = 0
             # while all(child_parameters <= self.problem.W):
-            #     old_child = child.copy()
+            for i in range(len(child)):
+                old_child = child.copy()
+
+                # add item to solution
+                child[sorted_value_objects_indexes[i]] = 1
+
+                # update parameters
+                child_parameters = self.problem.df.loc[:, self.problem.df.
+                                                       columns != 'Value'].loc[
+                                                           child ==
+                                                           1].sum().to_numpy()
+                if not all(child_parameters <= self.problem.W):
+                    child = old_child.copy()
+                    child_parameters = self.problem.df.loc[:, self.problem.df.
+                                                           columns !=
+                                                           'Value'].loc[
+                                                               child == 1].sum(
+                                                               ).to_numpy()
+                    # break  # TODO: provare a togliere
             #
-            #     # add item to solution
-            #     child[sorted_value_objects_indexes[i]] = 1
-            #
-            #     # update parameters
-            #     child_parameters = self.problem.df.loc[:, self.problem.df.
-            #                                            columns != 'Value'].loc[
-            #                                                child ==
-            #                                                1].sum().to_numpy()
-            #     if not all(child_parameters <= self.problem.W):
-            #         child = old_child
-            #         break  # TODO: provare a togliere
-            #
-            #     i = i + 1
-            #
-            # lg.debug("--- ADD  PHASE ---")
-            # lg.debug(f"LAST CHILD: {child}")
-            # lg.debug(f"   CP: {child_parameters}")
-            # lg.debug(f"OLD CHILD : {old_child}")
-            # lg.debug(
-            #     f"   CP: {self.problem.df.loc[:, self.problem.df.columns != 'Value'].loc[old_child == 1].sum().to_numpy()}"
-            # )
-            #
-            # lg.debug(f"W         : {self.problem.W}")
-            # lg.debug(f"NEW = OLD ?: {True if i != 0 else False}")
+            # i = i + 1
+
+            lg.debug("--- ADD  PHASE ---")
+            lg.debug(f"LAST CHILD: {child}")
+            lg.debug(f"   CP: {child_parameters}")
+            lg.debug(f"OLD CHILD : {old_child}")
+            lg.debug(
+                f"   CP: {self.problem.df.loc[:, self.problem.df.columns != 'Value'].loc[old_child == 1].sum().to_numpy()}"
+            )
+
+            lg.debug(f"W         : {self.problem.W}")
+            lg.debug(f"NEW = OLD ?: {True if i != 0 else False}")
 
             # forse va sempre fatto 🤔
             # if (i - 1) != 0:  # TODO: ricontrollare il -1
