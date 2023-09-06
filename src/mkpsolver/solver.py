@@ -205,10 +205,10 @@ class GeneticAlgorithm():
     def repair_operator(self, children: List[Solution]) -> Solution:
         lg.debug("REPAIR: Running")
 
-        sorted_value_objects_indexes = self.problem.df.sort_values(
-            by='Value', ascending=True).index.to_numpy()
-
-        lg.debug(f"sorted indexes: {sorted_value_objects_indexes}")
+        # sorted_value_objects_indexes = self.problem.df.sort_values(
+        #     by='Value', ascending=True).index.to_numpy()
+        #
+        # lg.debug(f"sorted indexes: {sorted_value_objects_indexes}")
 
         for child in children:
             child_parameters = self.problem.df.loc[:,
@@ -228,17 +228,20 @@ class GeneticAlgorithm():
 
             # DROP PHASE
             # delete high Values objects until solution is feasible
-            i = len(sorted_value_objects_indexes) - 1  # last element
+            # rimuovo elementi meno importanti
+            # valore oggetto e media coefficienti nel vincolo
+            # i = len(self.sorted_value_objects_indexes) - 1  # last element
+            i = 0
             while any(child_parameters > self.problem.W):
                 # delete item from solution
-                child[sorted_value_objects_indexes[i]] = 0
+                child[self.problem.sorted_value_objects_indexes[i]] = 0
 
                 # update parameters
                 child_parameters = self.problem.df.loc[:, self.problem.df.
                                                        columns != 'Value'].loc[
                                                            child ==
                                                            1].sum().to_numpy()
-                i = i - 1
+                i = i + 1
 
             lg.debug("--- DROP PHASE ---")
             lg.debug(f"FIX CHILD: {child}")
@@ -248,30 +251,49 @@ class GeneticAlgorithm():
 
             # ADD PAHSE
             # trying to add low Values objects if possible
-            i = 0
-            # while all(child_parameters <= self.problem.W):
-            for i in range(len(child)):
-                old_child = child.copy()
+            # i = len(
+            #     self.problem.sorted_value_objects_indexes) - 1  # last element
+            # # while all(child_parameters <= self.problem.W):
+            for i in reversed(range(len(child))):
+                tmp_child = child.copy()
 
                 # add item to solution
-                child[sorted_value_objects_indexes[i]] = 1
+                tmp_child[self.problem.sorted_value_objects_indexes[i]] = 1
 
                 # update parameters
-                child_parameters = self.problem.df.loc[:, self.problem.df.
-                                                       columns != 'Value'].loc[
-                                                           child ==
-                                                           1].sum().to_numpy()
-                if not all(child_parameters <= self.problem.W):
-                    child = old_child.copy()
-                    child_parameters = self.problem.df.loc[:, self.problem.df.
+                tmp_child_parameters = self.problem.df.loc[:, self.problem.df.
                                                            columns !=
                                                            'Value'].loc[
-                                                               child == 1].sum(
+                                                               tmp_child ==
+                                                               1].sum(
                                                                ).to_numpy()
-                    # break  # TODO: provare a togliere
-            #
-            # i = i + 1
+                # update child with tmp mods
+                if all(tmp_child_parameters <= self.problem.W):
+                    child = tmp_child.copy()
+                    child_parameters = tmp_child_parameters
 
+            # for i in reversed(range(len(child))):
+            #     old_child = child.copy()
+            #
+            #     # add item to solution
+            #     child[self.problem.sorted_value_objects_indexes[i]] = 1
+            #
+            #     # update parameters
+            #     child_parameters = self.problem.df.loc[:, self.problem.df.
+            #                                            columns != 'Value'].loc[
+            #                                                child ==
+            #                                                1].sum().to_numpy()
+            #     if not all(child_parameters <= self.problem.W):
+            #         child = old_child.copy()
+            #         child_parameters = self.problem.df.loc[:, self.problem.df.
+            #                                                columns !=
+            #                                                'Value'].loc[
+            #                                                    child == 1].sum(
+            #                                                    ).to_numpy()
+            #         # break  # TODO: provare a togliere
+            # #
+            # # i = i + 1
+            #
             lg.debug("--- ADD  PHASE ---")
             lg.debug(f"LAST CHILD: {child}")
             lg.debug(f"   CP: {child_parameters}")

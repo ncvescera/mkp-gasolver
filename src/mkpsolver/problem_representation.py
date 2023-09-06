@@ -1,6 +1,7 @@
 from mkpsolver.typing import List, Tuple, Solution
 import numpy as np
 import pandas as pd
+import logging as lg
 
 
 class MKProblem():
@@ -23,12 +24,30 @@ class MKProblem():
         self.df = pd.DataFrame(np.array(items)).transpose()
         self.df.columns = [f"f{i}" for i in range(len(self.W))]
 
+        sorted_df = self.df.copy()
+
         self.df = pd.concat(
             [self.df, pd.DataFrame(self.values, columns=['Value'])], axis=1)
-        # self.df = pd.DataFrame(np.array(items),
-        #                        columns=[f"f{i}" for i in range(len(self.W))])
-        # self.df = pd.concat(
-        #     [self.df, pd.DataFrame(self.values, columns=['Value'])], axis=1)
+
+        # Generating sorted indexes by Object Importance
+        object_importance_values = []
+        for i in range(self.num_items):
+            tmp_importance = (sorted_df.iloc[i] *
+                              self.W).sum() / self.W.sum() / self.values[i]
+            object_importance_values.append(tmp_importance)
+
+        sorted_df = pd.concat([
+            sorted_df,
+            pd.DataFrame(object_importance_values, columns=['Importance'])
+        ],
+                              axis=1)
+
+        lg.debug(f"IMPORTANCE:\n{sorted_df}")
+
+        self.sorted_value_objects_indexes = sorted_df.sort_values(
+            by='Importance', ascending=True).index.to_numpy()
+
+        lg.debug(f"SORTED INDEXES: {self.sorted_value_objects_indexes}")
 
     def get_dim(self) -> int:
         return self.num_items
