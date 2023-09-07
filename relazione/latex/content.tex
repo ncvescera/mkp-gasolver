@@ -45,11 +45,12 @@ problemi. Una singola istanza di presenta come segue:
 3800
 \end{lstlisting}
 
-La prima riga contiene il numero di oggetti, la seconda i valori di ogni singolo
-oggetto, la terza il numero di vincoli, le successive righe rappresentano i
-valori del primo vincolo, del secondo e così via fin quando non si raggiunge il
-numero di vincoli. La penultima riga indica il valore massimo per ogni vincolo e
-l'ultima il valore della soluzione.
+La prima riga contiene il numero di oggetti, la seconda il valore di ogni singolo
+oggetto, la terza il numero di parametri, le successive righe rappresentano i
+valori dei coefficienti del primo parametro, del secondo e così via fin quando non si raggiunge il
+numero di parametri. La penultima riga indica il valore massimo per ogni parametro (rappresenta quindi
+il vincolo che non si può superare) e
+l'ultima il valore della soluzione ottimale.
 
 \begin{lstlisting}[caption={Rappresentazione sotto forma tabellare dell'istanza precedente}]
     ID  f0    f1    f2    f3    f4    f5   f6   f7   f8   f9   Value
