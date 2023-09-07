@@ -205,11 +205,6 @@ class GeneticAlgorithm():
     def repair_operator(self, children: List[Solution]) -> Solution:
         lg.debug("REPAIR: Running")
 
-        # sorted_value_objects_indexes = self.problem.df.sort_values(
-        #     by='Value', ascending=True).index.to_numpy()
-        #
-        # lg.debug(f"sorted indexes: {sorted_value_objects_indexes}")
-
         for child in children:
             child_parameters = self.problem.df.loc[:,
                                                    self.problem.df.columns !=
@@ -227,9 +222,7 @@ class GeneticAlgorithm():
             lg.debug(f"W        : {self.problem.W}")
 
             # DROP PHASE
-            # delete high Values objects until solution is feasible
-            # rimuovo elementi meno importanti
-            # valore oggetto e media coefficienti nel vincolo
+            # delete low Important objects first until solution is feasible
             # i = len(self.sorted_value_objects_indexes) - 1  # last element
             i = 0
             while any(child_parameters > self.problem.W):
@@ -250,11 +243,9 @@ class GeneticAlgorithm():
             lg.debug(f"DEL ELEMS: {(child != old_child).sum()}")
 
             # ADD PAHSE
-            # trying to add low Values objects if possible
-            # i = len(
-            #     self.problem.sorted_value_objects_indexes) - 1  # last element
-            # # while all(child_parameters <= self.problem.W):
+            # trying to add most important objects first if possible
             for i in reversed(range(len(child))):
+                # temporary edited child
                 tmp_child = child.copy()
 
                 # add item to solution
@@ -268,46 +259,15 @@ class GeneticAlgorithm():
                                                                1].sum(
                                                                ).to_numpy()
                 # update child with tmp mods
+                # if is feasible solution
                 if all(tmp_child_parameters <= self.problem.W):
                     child = tmp_child.copy()
                     child_parameters = tmp_child_parameters
 
-            # for i in reversed(range(len(child))):
-            #     old_child = child.copy()
-            #
-            #     # add item to solution
-            #     child[self.problem.sorted_value_objects_indexes[i]] = 1
-            #
-            #     # update parameters
-            #     child_parameters = self.problem.df.loc[:, self.problem.df.
-            #                                            columns != 'Value'].loc[
-            #                                                child ==
-            #                                                1].sum().to_numpy()
-            #     if not all(child_parameters <= self.problem.W):
-            #         child = old_child.copy()
-            #         child_parameters = self.problem.df.loc[:, self.problem.df.
-            #                                                columns !=
-            #                                                'Value'].loc[
-            #                                                    child == 1].sum(
-            #                                                    ).to_numpy()
-            #         # break  # TODO: provare a togliere
-            # #
-            # # i = i + 1
-            #
             lg.debug("--- ADD  PHASE ---")
-            lg.debug(f"LAST CHILD: {child}")
-            lg.debug(f"   CP: {child_parameters}")
-            lg.debug(f"OLD CHILD : {old_child}")
-            lg.debug(
-                f"   CP: {self.problem.df.loc[:, self.problem.df.columns != 'Value'].loc[old_child == 1].sum().to_numpy()}"
-            )
-
-            lg.debug(f"W         : {self.problem.W}")
-            lg.debug(f"NEW = OLD ?: {True if i != 0 else False}")
-
-            # forse va sempre fatto 🤔
-            # if (i - 1) != 0:  # TODO: ricontrollare il -1
-            #     child = old_child
+            lg.debug(f"FIXED CHILD: {child}")
+            lg.debug(f"CP         : {child_parameters}")
+            lg.debug(f"W          : {self.problem.W}")
 
     def select_new_population(self, children: List[Solution], gen: int):
 
