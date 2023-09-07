@@ -1,8 +1,10 @@
 import numpy as np
 from mkpsolver.typing import List, Tuple, Dict, Solution
 from mkpsolver.problem_representation import MKProblem
+from tqdm import tqdm
 import random
 import logging as lg
+from tqdm.contrib.logging import logging_redirect_tqdm
 
 
 class GeneticAlgorithm():
@@ -34,15 +36,19 @@ class GeneticAlgorithm():
 
         self.init_population()
 
-        for gen in range(1, self.num_gen + 1):
-            lg.debug(f"STARTING GEN {gen}")
+        # a tqdm trick for stick the progress bar on the bottom
+        # part of the terminal and print output
+        # (redirect logging to tqdm.write)
+        with logging_redirect_tqdm():
+            for gen in tqdm(range(1, self.num_gen + 1)):
+                lg.debug(f"STARTING GEN {gen}")
 
-            mating_pool: List[Tuple[Solution,
-                                    Solution]] = self.select_mating_pool()
-            children: List[Solution] = self.do_crossover(mating_pool)
-            self.do_mutation(children)
-            self.repair_operator(children)
-            self.select_new_population(children, gen)
+                mating_pool: List[Tuple[Solution,
+                                        Solution]] = self.select_mating_pool()
+                children: List[Solution] = self.do_crossover(mating_pool)
+                self.do_mutation(children)
+                self.repair_operator(children)
+                self.select_new_population(children, gen)
 
         return {
             "best": self.best,
