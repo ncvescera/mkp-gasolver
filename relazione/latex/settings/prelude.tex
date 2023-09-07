@@ -1,0 +1,79 @@
+\usepackage[T1]{fontenc}
+\usepackage[utf8]{inputenc}
+\usepackage[italian]{babel}
+
+\usepackage{graphicx}
+%% links
+\usepackage{hyperref}
+% \hypersetup{
+% 	colorlinks=true,
+% 	linkcolor=blue,
+% 	filecolor=magenta,
+% 	urlcolor=cyan,
+% 	pdftitle={\titolo},
+% 	pdfpagemode=FullScreen,
+% }
+
+\graphicspath{ {./img/} }
+
+
+%% configurazione per i listing di codice
+\usepackage{float}
+\usepackage{amsthm}
+\usepackage{amsmath}
+\usepackage{amssymb}
+\usepackage{amsfonts}
+\usepackage{xcolor}
+\usepackage{listings}
+
+\setlength{\parindent}{0pt}
+
+\definecolor{codegreen}{rgb}{0,0.6,0}
+\definecolor{codegray}{rgb}{0.5,0.5,0.5}
+\definecolor{codepurple}{rgb}{0.58,0,0.82}
+\definecolor{backcolour}{rgb}{0.95,0.95,0.92}
+
+\lstdefinestyle{mystyle}{
+	backgroundcolor=\color{backcolour},
+	commentstyle=\color{codegreen},
+	keywordstyle=\bfseries\color{black},
+	numberstyle=\tiny\color{codegray},
+	stringstyle=\color{codepurple},
+	basicstyle=\ttfamily\footnotesize,
+	breakatwhitespace=false,
+	breaklines=true,
+	captionpos=b,
+	keepspaces=true,
+	numbers=left,
+	numbersep=5pt,
+	showspaces=false,
+	showstringspaces=false,
+	showtabs=false,
+	tabsize=2,
+	mathescape=true,
+	escapeinside={\%*}{*)},
+	morekeywords={
+			begin,
+			end,
+			if,
+			then,
+			else,
+			to,
+			endif,
+			Procedure,
+			while,
+			do,
+			return,
+			true,
+			false,
+			set,
+			for,
+			repeat,
+			until
+			foreach},
+}
+
+\lstset{style=mystyle}
+
+\renewcommand{\lstlistlistingname}{Elenco dei codici}
+\renewcommand{\lstlistingname}{Codice}

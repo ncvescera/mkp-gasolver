@@ -1,0 +1,79 @@
+\section{Obiettivo}
+Il problema dello zaino multidimensionale (Multidimensional Knapsack Problem) è
+un'estensione del più noto problema dello Zaino. L'obbiettivo è sempre lo
+stesso, trovare un set di oggetti che massimizzi il profitto totale facendo in
+modo di non superare la capienza massima dello zaino, solo con l'aggiunta di più
+vincoli: non dovremmo solo preoccuparci della capienza dello zaino ma anche di
+altri $n$ differenti fattori.\\
+
+Questo problema può essere formalmente sintetizzato come segue:
+
+\[
+    \max \sum_{j=1}^{n} p_j x_j
+\]
+
+\[
+    \text{subject to: } \sum_{j=1}^{n} r_{i,j} x_j \leq b_i, \ \ i = 1,2,\ldots, m
+\]
+
+con $x_j = \{0, 1\}$, $n$ il numero di oggetti, $m$ il numero di vincoli, $b$ il limite massimo per ogni vincolo,
+$r$ il valore per ogni singolo vincolo di ogni oggetto.
+Il problema verrà risolto mediante l'implementazione di un Algoritmo Genetico.
+
+\section{Istanze del Problema}
+
+L'algoritmo per la risoluzione di questo problema verrà testato utilizzando il dataset
+\href{http://people.brunel.ac.uk/~mastjjb/jeb/orlib/mknapinfo.html}{OR-Library}: una
+raccolta di varie istanze, di differenti dimensioni, per una svariata moltitudine di
+problemi. Una singola istanza di presenta come segue:
+
+\begin{lstlisting}[caption={Esempio di Istanza di un problema MKP con 6 oggetti e 10 vincoli.}]
+6
+100,600,1200,2400,500,2000
+10
+8,12,13,64,22,41
+8,12,13,75,22,41
+3,6,4,18,6,4
+5,10,8,32,6,12
+5,13,8,42,6,20
+5,13,8,48,6,20
+0,0,0,0,8,0
+3,0,4,0,8,0
+3,2,4,0,8,4
+3,2,4,8,8,4
+80,96,20,36,44,48,10,18,22,24
+3800
+\end{lstlisting}
+
+La prima riga contiene il numero di oggetti, la seconda i valori di ogni singolo
+oggetto, la terza il numero di vincoli, le successive righe rappresentano i
+valori del primo vincolo, del secondo e così via fin quando non si raggiunge il
+numero di vincoli. La penultima riga indica il valore massimo per ogni vincolo e
+l'ultima il valore della soluzione.
+
+\begin{lstlisting}[caption={Rappresentazione sotto forma tabellare dell'istanza precedente}]
+    ID  f0    f1    f2    f3    f4    f5   f6   f7   f8   f9   Value
+    0   8.0   8.0   3.0   5.0   5.0   5.0  0.0  3.0  3.0  3.0   100.0
+    1  12.0  12.0   6.0  10.0  13.0  13.0  0.0  0.0  2.0  2.0   600.0
+    2  13.0  13.0   4.0   8.0   8.0   8.0  0.0  4.0  4.0  4.0  1200.0
+    3  64.0  75.0  18.0  32.0  42.0  48.0  0.0  0.0  0.0  8.0  2400.0
+    4  22.0  22.0   6.0   6.0   6.0   6.0  8.0  8.0  8.0  8.0   500.0
+    5  41.0  41.0   4.0  12.0  20.0  20.0  0.0  0.0  4.0  4.0  2000.0
+\end{lstlisting}
+% \section{Nome del capitolo}
+% \label{sec:capitolo}
+% Aggiungi qui il contenuto della relazione !!\\
+% \ \\
+% Prova codice cmd
+% \begin{lstlisting}[style=cmd]
+%  this is a code in cmd style ...
+% \end{lstlisting}
+% \ \\
+% Prova codice output
+%
+% \begin{lstlisting}[style=output]
+%  this is a code in output style ...
+% \end{lstlisting}
+% \ \\
+% Prova codice inline: \lstinline[style=cmd]|this is an inline code ...|\\
+% \ \\
