@@ -170,11 +170,38 @@ def show_result(path: str):
     print(perfile_minmax)
 
     # PLOTS
-    perfile_minmax['% avg diff'].plot(kind='bar')
-    plt.savefig(f"{path.split('.')[0]}_percentage_avg_diff.png")
+    # perfile_minmax['% avg diff'].plot(kind='bar')
+    # plt.savefig(f"{path.split('.')[0]}_percentage_avg_diff.png")
+    #
+    # perfile_minmax[['success', 'fails']].plot(kind='bar')
+    # plt.savefig(f"{path.split('.')[0]}_success_vs_fails.png")
 
-    perfile_minmax[['success', 'fails']].plot(kind='bar')
-    plt.savefig(f"{path.split('.')[0]}_success_vs_fails.png")
+    fig, axes = plt.subplots(2, 1, figsize=(8, 6), sharex=True)
+
+    # Plot the first chart in the top subplot
+    perfile_minmax['% avg diff'].plot(kind='bar', ax=axes[0])
+    axes[0].set_title('Percentage AVG diff')
+    axes[0].set_ylabel('Percentage')
+    axes[0].legend()
+
+    # Plot the second chart in the bottom subplot
+    perfile_minmax[['success', 'fails']].plot(kind='bar', ax=axes[1])
+    axes[1].set_title('Success vs Fails')
+    axes[1].set_ylabel('Counts')
+    axes[1].legend()
+
+    plt.xticks(rotation=45)
+
+    param = path.split('.')[0].split('_')[2:]
+    fig.suptitle(
+        f'pmut: {float(param[0])/100} pcross: {float(param[1])/100} ngen: {param[2]} plen: {param[3]} tk: {param[4]}',
+        fontsize=16)
+
+    # Adjust spacing between subplots
+    plt.tight_layout()
+
+    # Display the plots
+    plt.savefig(f"{path.split('.')[0]}.png")
 
 
 def main(args):
