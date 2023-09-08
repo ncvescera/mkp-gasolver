@@ -117,6 +117,7 @@ def show_result(path: str):
     test.index = df['file']
     true_list = []
     false_list = []
+
     for f in test.index.unique():
         f_ture_count = test.loc[f][test.loc[f]['success'] ==
                                    True].count().iloc[0]
@@ -170,13 +171,6 @@ def show_result(path: str):
     print("PER FILE STATISTICS")
     print(perfile_minmax)
 
-    # PLOTS
-    # perfile_minmax['% avg diff'].plot(kind='bar')
-    # plt.savefig(f"{path.split('.')[0]}_percentage_avg_diff.png")
-    #
-    # perfile_minmax[['success', 'fails']].plot(kind='bar')
-    # plt.savefig(f"{path.split('.')[0]}_success_vs_fails.png")
-
     fig, axes = plt.subplots(2, 1, figsize=(8, 6), sharex=True)
 
     # Plot the first chart in the top subplot
@@ -196,7 +190,11 @@ def show_result(path: str):
 
     param = path.split('.')[0].split('_')[2:]
     fig.suptitle(
-        f'pmut: {float(param[0])/100} pcross: {float(param[1])/100} ngen: {param[2]} plen: {param[3]} tk: {param[4]}',
+        f'pmut: {float(param[0])/100} '
+        f'pcross: {float(param[1])/100} '
+        f'ngen: {param[2]} '
+        f'plen: {param[3]}'
+        f'tk: {param[4]}',
         fontsize=16)
 
     # Adjust spacing between subplots
