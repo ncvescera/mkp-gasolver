@@ -5,6 +5,7 @@ from mkpsolver.solver import GeneticAlgorithm
 from tqdm import tqdm
 from multiprocessing import Pool
 from functools import partial
+import matplotlib.pyplot as plt
 
 TUNING_SET = [
     "MKP01.txt",
@@ -93,22 +94,40 @@ def show_result(path: str):
     print(df)
     print()
 
-    success, fail = df['success'].value_counts()
+    fail, success = df['success'].value_counts()
     all_success_ratio = success / (success + fail)
     all_max_diff = max(df['diff'])
+    all_min_diff = min(df[df['diff'] > 0]['diff'])
 
     print(f"SUCCESS (#): {success}, "
           f"FAIL (#): {fail}, "
-          f"SUCCESS RATIO (%): {all_success_ratio * 100}, "
+          f"SUCCESS RATIO (%): {round(all_success_ratio * 100, 1)}, "
+          f"MIN DIFF: {all_min_diff}, "
           f"MAX DIFF: {all_max_diff}")
+    print()
 
     df_groupby = df.groupby("file")
     perfile_success = df.groupby(["file"])["success"].value_counts()
     perfile_success = pd.DataFrame(perfile_success)
     perfile_success["%"] = perfile_success['count'] / 5
 
-    print(perfile_success)
-    # return
+    # getting SUCCESS # and FAILS # per file
+    test = df[['success']]
+    test.index = df['file']
+    true_list = []
+    false_list = []
+    for f in test.index.unique():
+        f_ture_count = test.loc[f][test.loc[f]['success'] ==
+                                   True].count().iloc[0]
+        f_false_count = test.loc[f][test.loc[f]['success'] ==
+                                    False].count().iloc[0]
+        true_list.append(f_ture_count)
+        false_list.append(f_false_count)
+
+    perfile_success = pd.DataFrame({"true": true_list, "false": false_list})
+    perfile_success.index = test.index.unique()
+
+    # min/max found values
     perfile_minfound = df_groupby["found"].min()
     perfile_maxfound = df_groupby["found"].max()
 
@@ -116,17 +135,46 @@ def show_result(path: str):
                                     axis=1)
     perfile_minmaxfound.columns = ["min found", "max found"]
 
+    # min/max/mean diff
     perfile_mindiff = df_groupby["diff"].min()
     perfile_maxdiff = df_groupby["diff"].max()
+    perfile_avgdiff = df_groupby["diff"].mean()
 
-    perfile_minmaxdiff = pd.concat([perfile_mindiff, perfile_maxdiff], axis=1)
-    perfile_minmaxdiff.columns = ["min diff", "max diff"]
+    percentage_avgdiff = round(
+        (
+            perfile_avgdiff /
+            # unique return a df with lists of 1 elem
+            # with apply I remove the list and get only the element inside
+            df_groupby['target'].unique().apply(lambda col: col[0])) * 100,
+        1)
+
+    perfile_minmaxdiff = pd.concat(
+        [
+            perfile_mindiff,
+            perfile_maxdiff,
+            perfile_avgdiff,
+            percentage_avgdiff,
+            perfile_success,
+        ],
+        axis=1,
+    )
+
+    perfile_minmaxdiff.columns = [
+        "min diff", "max diff", "avg diff", "% avg diff", "success", "fails"
+    ]
 
     perfile_minmax = pd.concat([perfile_minmaxfound, perfile_minmaxdiff],
                                axis=1)
+
+    print("PER FILE STATISTICS")
     print(perfile_minmax)
-    # print(df_groupby["found"].min(), df_groupby["found"].max())
-    # print(pd.concat([perfile_success, df_groupby["found"].min()], axis=1))
+
+    # PLOTS
+    perfile_minmax['% avg diff'].plot(kind='bar')
+    plt.savefig(f"{path.split('.')[0]}_percentage_avg_diff.png")
+
+    perfile_minmax[['success', 'fails']].plot(kind='bar')
+    plt.savefig(f"{path.split('.')[0]}_success_vs_fails.png")
 
 
 def main(args):
