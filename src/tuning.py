@@ -187,7 +187,8 @@ def show_result(path: str):
 
     # Plot the second chart in the bottom subplot
     perfile_minmax[['success', 'fails']].plot(kind='bar', ax=axes[1])
-    axes[1].set_title('Success vs Fails')
+    axes[1].set_title(
+        f'Success vs Fails\n(ratio: {round(all_success_ratio * 100, 1)}%)')
     axes[1].set_ylabel('Counts')
     axes[1].legend()
 
