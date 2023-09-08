@@ -89,6 +89,7 @@ def tuning(pmut=.01, pcross=.9, ngen=250, plen=70, tk=45):
 
 
 def show_result(path: str):
+    path = path.strip()
     df = pd.read_csv(path, index_col=0)
 
     print(df)
