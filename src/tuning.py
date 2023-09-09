@@ -90,10 +90,7 @@ def tuning(pmut=.01, pcross=.9, ngen=250, plen=70, tk=45):
 
 def show_result(path: str):
     path = path.strip()
-    df = pd.read_csv(path, index_col=0)
-
-    print(df)
-    print()
+    df = pd.read_csv(path, index_col=0).round(1)
 
     fail, success = df['success'].value_counts()
     all_success_ratio = success / (success + fail)
@@ -108,9 +105,6 @@ def show_result(path: str):
     print()
 
     df_groupby = df.groupby("file")
-    perfile_success = df.groupby(["file"])["success"].value_counts()
-    perfile_success = pd.DataFrame(perfile_success)
-    perfile_success["%"] = perfile_success['count'] / 5
 
     # getting SUCCESS # and FAILS # per file
     test = df[['success']]
@@ -193,7 +187,7 @@ def show_result(path: str):
         f'pmut: {float(param[0])/100} '
         f'pcross: {float(param[1])/100} '
         f'ngen: {param[2]} '
-        f'plen: {param[3]}'
+        f'plen: {param[3]} '
         f'tk: {param[4]}',
         fontsize=16)
 
