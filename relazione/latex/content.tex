@@ -61,6 +61,184 @@ l'ultima il valore della soluzione ottimale.
     4  22.0  22.0   6.0   6.0   6.0   6.0  8.0  8.0  8.0  8.0   500.0
     5  41.0  41.0   4.0  12.0  20.0  20.0  0.0  0.0  4.0  4.0  2000.0
 \end{lstlisting}
+
+Prova di testo scritto e aggiornato di nuovo
+
+\section{Implementazione}
+
+Il problema descritto in precedenza verrà risolto mediante l'implementazione
+di un Algoritmo Genetico. È stato scelto questo approccio per la sua
+semplicità di implementazione e relativa velocità di esecuzione. Di seguito
+saranno descritte le principali componenti che caratterizzano questo algoritmo.
+% Vedremo come sarà necessario l'utilizzo di un operatore di 'riparazione' (repair operator)
+
+\subsection{Initial Population}
+La prima operazione per l'implementazione di un algoritmo genetico è quella di
+andare a generare la popolazione iniziale. In questa implementazione verrà
+fatto in maniera casuale applicando una strategia che permetterà di creare
+elementi della popolazione (noti anche come \textit{cromosomi}) sempre ammissibili.
+Questa operazione può essere descritta come segue:
+
+\begin{enumerate}
+    \item Crea una soluzione temporanea vuota (nessun oggetto),
+    \item Estrai casualmente un oggetto tra quelli disponibili, \label{enum:loop}
+    \item Prova ad aggiungere questo oggetto alla soluzione temporanea, \label{enum:check}
+          \begin{itemize}
+              \item se è possibile farlo: \begin{itemize}
+                        \item aggiungi l'oggetto definitivamente alla soluzione,
+                        \item rimuovi l'oggetto dagli oggetti disponibili,
+                        \item continua dal punto \ref{enum:loop}.
+                    \end{itemize}
+              \item se non lo è: \begin{itemize}
+                        \item aggiungi la soluzione creata alla lista delle
+                              soluzioni generate fin ora.
+                    \end{itemize}
+          \end{itemize}
+    \item Continua fin quando non è stato generato il numero desiderato di soluzioni.
+\end{enumerate}
+
+\begin{lstlisting}[caption={Pseudocodice per la Selezione della Popolazione iniziale.}]
+PROCEDURE initialize_population
+    INPUT:
+        num_elem: number of solution to generate
+        item_list: list of items
+        num_items: number of items
+        W: constraints upper bound
+
+    population <- empty list of Solutions
+    f_obj <- list of zeros with length num_elem
+
+    FOR i <- 0 TO num_elem - 1 DO
+        tmp_sol <- list of zeros with length num_items
+
+        // list of item indexes
+        T <- list of integers from 0 to num_items - 1
+
+        R <- list of zeros with length equal to the
+             number of constraints in the problem
+
+        j <- randomly select an integer from T
+        item <- item_list.pop(j)
+
+        WHILE all elements of (R + item) <= W DO
+            tmp_sol[j] <- 1
+            R <- R + item
+
+            IF length(T) <= 0 THEN
+                EXIT WHILE loop
+            END IF
+
+            j <- randomly select an integer from T
+            item <- item_list.pop(j)
+        END WHILE
+
+        APPEND tmp_sol to population
+        f_obj[i] <- calculate the objective function value for tmp_sol
+    END FOR
+END PROCEDURE
+\end{lstlisting}
+
+Possiamo notare come nel punto \ref{enum:check}, grazie alle operazioni
+descritte, ogni soluzione generata sarà sicuramente ammissibile perchè verrà
+sempre controllato che, ogni qualvolta viene aggiunto un oggetto, la nuova
+soluzione non superi i limiti massimi imposti al problema.
+
+\subsection{Mating Pool Selection}
+Una volta descritto come inizializzare la popolazione, và specificato come
+selezionare gli individui per formare il Mating Pool, un insieme di $N/2$ coppie
+che verranno utilizzate al passaggio successivo: \textbf{Crossover}. La
+selezione del Mating Pool può avvenire in due modi: tramite \textit{Roulette
+    Wheel} o \textit{Tournaments}. Per la semplicità di implementazione e
+soprattutto per il basso costo computazionale è stato implementato il metodo
+basato sui Tornei. Vengono selezionati casualmente un numero $k$ di elementi
+della popolazione e tra questi viene preso il cromosoma con valore di fitness
+più alto. Tramite questa operazione vengono generate $N/2$ coppie che poi verranno
+passate all'operatore di Crossover.
+Di seguito lo pseudocodice che riassume questa operazione.
+
+\begin{lstlisting}[caption={Implementazione del metodo per la selezione del Mating Pool basata sui Tornei.}]
+FUNCTION tournament(k: INTEGER) RETURNS Solution
+    random_select_solutions = select k solution from population randomly
+
+    max_index = select the index of solution with max fitness value
+                in random_select_solutions
+
+    RETURN population[max_index]
+END FUNCTION
+
+PROCEDURE select_mating_pool
+    INPUT:
+        population: List of all chromosomes (solutions)
+        k: tournament parameter
+
+    mating_pool = empty list
+
+    FOR i <- 1 TO LENGTH(population) // 2 DO
+        c1 = tournament(k)
+        c2 = tournament(k)
+
+        APPEND (c1, c2) to mating_pool
+    END FOR
+
+    RETURN mating_pool
+END FUNCTION
+\end{lstlisting}
+
+\subsection{Crossover Operator}
+L'operatore di Crossover prende gli elementi del Mating Pool e genera un nuovo
+elemento chiamato \textit{figlio}. Questo è un \textbf{Crossover Uniforme}: dati
+due cromosomi, che prendono il nome di \textit{padri} (indicati con $s_1$ e
+$s_2$), viene generato un nuovo individuo figlio che eredita in modo uniforme i
+geni dai due padri. Il crossover viene eseguito con una probabilità data dal
+parametro \verb|pcross|. Di seguito lo pseudocodice.
+
+\begin{minipage}{\textwidth}
+    \begin{lstlisting}
+FUNCTION uniform_crossover_operator(s1, s2) RETURNS Solution
+    c = ARRAY OF ZEROS with length LENGTH(s1)
+
+    FOR i <- 1 TO LENGTH(s1) DO
+        IF RANDOM_BOOLEAN() THEN
+            c[i] = s1[i]
+        ELSE
+            c[i] = s2[i]
+        END IF
+    END FOR
+
+    RETURN c
+END FUNCTION
+
+PROCEDURE do_crossover
+    INPUT:
+        mating_pool: N/2 couples from Selecting Mating Pool Phase
+        pcross: Crossover probability
+
+    children = empty list
+
+    FOR EACH (s1, s2) IN mating_pool DO
+        IF RANDOM_FLOAT() < pcross THEN
+            c = uniform_crossover_operator(s1, s2)
+            APPEND c to children
+        ELSE
+            APPEND s1 to children
+            APPEND s2 to children
+        END IF
+    END FOR
+
+    RETURN children
+END FUNCTION
+\end{lstlisting}
+    \captionof{lstlisting}{Implementazione dell'operatore di Crossover.}
+\end{minipage}
+
+\subsection{Mutation Operator}
+
+\subsection{Repair Operator}
+\subsection{Select New Population}
+
+\section{Stima dei Parametri}
+\section{Valutazione delle Performance}
+
 % \section{Nome del capitolo}
 % \label{sec:capitolo}
 % Aggiungi qui il contenuto della relazione !!\\
