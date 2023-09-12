@@ -181,7 +181,7 @@ PROCEDURE select_mating_pool
     END FOR
 
     RETURN mating_pool
-END FUNCTION
+END PROCEDURE
 \end{lstlisting}
 
 \subsection{Crossover Operator}
@@ -226,14 +226,73 @@ PROCEDURE do_crossover
     END FOR
 
     RETURN children
-END FUNCTION
+END PROCEDURE
 \end{lstlisting}
     \captionof{lstlisting}{Implementazione dell'operatore di Crossover.}
 \end{minipage}
 
 \subsection{Mutation Operator}
 
+L'operatore di Mutazione è il responsabile di alterare i geni dei cromosomi
+risultanti dalla precedente fase di Crossover (indipendentemente se sono
+genitori o figli). In base al parametro \verb|pmut| (\textit{mutation
+    probability}), per ogni gene di ogni cromosoma, viene scelto se effettuare una
+mutazione oppure no. La mutazione consiste nel cambiare il rispettivo gene
+scelto tramite una semplice operazione di negazione.
+
+\begin{minipage}{\textwidth}
+    \begin{lstlisting}
+PROCEDURE do_mutation
+    INPUT:
+        children: Crossover Phase Result
+        pmut: Mutation Probability
+
+    FOR EACH child in children do
+        FOR i <- 0 TO LENGTH(child) - 1 DO
+            IF RANDOM_FLOAT() < pmut THEN
+                child[i] <- not child[i]
+            END IF
+        END FOR
+    END FOR
+END PROCEDURE
+\end{lstlisting}
+    \captionof{lstlisting}{Implementazione dell'operatore di Crossover.}
+\end{minipage}
+
 \subsection{Repair Operator}
+
+Una volta terminata la fase di Mutazione, abbiamo in output una serie di
+cromosomi figli che molto probabilmente non rispettano i criteri del problema e
+non sono quindi soluzioni ammissibili. C'è la necessità quindi di andare a
+\textquote*{riparare} ogni cromosoma che porti ad una soluzione non valida.
+L'operatore che si occupa di questa procedura è stato implementato in 2 fai: la
+prima \textbf{Sottrattiva} e la seconda \textbf{Additiva}. L'idea che c'è dietro
+a questa procedura può essere riassunta come segue:
+
+\begin{enumerate}
+    \item Per ogni figlio controlla se è una soluzione ammissibile.
+          \label{enum:looprep}
+    \item Se lo è, torna al punto \ref{enum:looprep}
+    \item Altrimenti:
+          \begin{enumerate}
+              \item \textbf{Fase Sottrattiva}: rimuovi un oggetto alla volta
+                    dalla soluzione, fin quando la soluzione non diventa ammissibile
+              \item \textbf{Fase Additiva}: aggiungi un oggetto alla volta alla
+                    soluzione, fin quando è possibile (fin quando la soluzione
+                    rimane ancora ammissibile).
+              \item Torna al punto \ref{enum:looprep}
+          \end{enumerate}
+\end{enumerate}
+
+Durante le due fasi, gli oggetti vengo scelti in modo ordinato in base ad un
+parametro chiamato \textit{Importanza}. L'idea di base è di rimuovere prima gli
+oggetti meno importanti e di aggiungere poi quelli più importanti. Questo parametro
+viene calcolato in base alla seguente formula:
+
+\begin{equation}
+    Importance(j) = \frac{\sum_{i=1}^{m} r_{i,j} b_i}{\sum_{i=1}^{m} b_i} \frac{1}{p_j}
+\end{equation}
+
 \subsection{Select New Population}
 
 \section{Stima dei Parametri}
