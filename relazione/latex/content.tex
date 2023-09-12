@@ -97,7 +97,8 @@ Questa operazione può essere descritta come segue:
     \item Continua fin quando non è stato generato il numero desiderato di soluzioni.
 \end{enumerate}
 
-\begin{lstlisting}[caption={Pseudocodice per la Selezione della Popolazione iniziale.}]
+\begin{minipage}{\textwidth}
+    \begin{lstlisting}
 PROCEDURE initialize_population
     INPUT:
         num_elem: number of solution to generate
@@ -137,6 +138,8 @@ PROCEDURE initialize_population
     END FOR
 END PROCEDURE
 \end{lstlisting}
+    \captionof{lstlisting}{Pseudocodice per la Selezione della Popolazione iniziale.}
+\end{minipage}\\
 
 Possiamo notare come nel punto \ref{enum:check}, grazie alle operazioni
 descritte, ogni soluzione generata sarà sicuramente ammissibile perchè verrà
@@ -158,9 +161,9 @@ Di seguito lo pseudocodice che riassume questa operazione.
 
 \begin{lstlisting}[caption={Implementazione del metodo per la selezione del Mating Pool basata sui Tornei.}]
 FUNCTION tournament(k: INTEGER) RETURNS Solution
-    random_select_solutions = select k solution from population randomly
+    random_select_solutions <- select k solution from population randomly
 
-    max_index = select the index of solution with max fitness value
+    max_index <- select the index of solution with max fitness value
                 in random_select_solutions
 
     RETURN population[max_index]
@@ -171,11 +174,11 @@ PROCEDURE select_mating_pool
         population: List of all chromosomes (solutions)
         k: tournament parameter
 
-    mating_pool = empty list
+    mating_pool <- empty list
 
     FOR i <- 1 TO LENGTH(population) // 2 DO
-        c1 = tournament(k)
-        c2 = tournament(k)
+        c1 <- tournament(k)
+        c2 <- tournament(k)
 
         APPEND (c1, c2) to mating_pool
     END FOR
@@ -199,9 +202,9 @@ FUNCTION uniform_crossover_operator(s1, s2) RETURNS Solution
 
     FOR i <- 1 TO LENGTH(s1) DO
         IF RANDOM_BOOLEAN() THEN
-            c[i] = s1[i]
+            c[i] <- s1[i]
         ELSE
-            c[i] = s2[i]
+            c[i] <- s2[i]
         END IF
     END FOR
 
@@ -213,11 +216,11 @@ PROCEDURE do_crossover
         mating_pool: N/2 couples from Selecting Mating Pool Phase
         pcross: Crossover probability
 
-    children = empty list
+    children <- empty list
 
     FOR EACH (s1, s2) IN mating_pool DO
         IF RANDOM_FLOAT() < pcross THEN
-            c = uniform_crossover_operator(s1, s2)
+            c <- uniform_crossover_operator(s1, s2)
             APPEND c to children
         ELSE
             APPEND s1 to children
@@ -247,7 +250,7 @@ PROCEDURE do_mutation
         children: Crossover Phase Result
         pmut: Mutation Probability
 
-    FOR EACH child in children do
+    FOR EACH child in children DO
         FOR i <- 0 TO LENGTH(child) - 1 DO
             IF RANDOM_FLOAT() < pmut THEN
                 child[i] <- not child[i]
@@ -256,7 +259,7 @@ PROCEDURE do_mutation
     END FOR
 END PROCEDURE
 \end{lstlisting}
-    \captionof{lstlisting}{Implementazione dell'operatore di Crossover.}
+    \captionof{lstlisting}{Pseudocodice dell'operatore di Crossover.}
 \end{minipage}
 
 \subsection{Repair Operator}
@@ -289,13 +292,89 @@ parametro chiamato \textit{Importanza}. L'idea di base è di rimuovere prima gli
 oggetti meno importanti e di aggiungere poi quelli più importanti. Questo parametro
 viene calcolato in base alla seguente formula:
 
-\begin{equation}
+\begin{equation}\label{eq:importance}
     Importance(j) = \frac{\sum_{i=1}^{m} r_{i,j} b_i}{\sum_{i=1}^{m} b_i} \frac{1}{p_j}
 \end{equation}
 
+\begin{minipage}{\textwidth}
+    \begin{lstlisting}{mathescape=true}
+PROCEDURE repair_operator
+    INPUT:
+        children: Mutation Phase Result
+
+    sorted_objects <- sort object according to equation $\text{\ref{eq:importance}}$
+    sorted_index <- get indexes of sorted object by Importance
+
+    FOR EACH child in children DO
+        IF child is feasible solution DO
+            continue
+        END IF
+
+        // DROP PHASE
+        child <- remove object from child, starting from less Important,
+                until child is feasible solution
+
+        // ADD PHASE
+        child <- add object to child, starting from most Important,
+                until child is feasible solution
+    END FOR
+END PROCEDURE
+    \end{lstlisting}
+    \captionof{lstlisting}{Pseudocodice dell'operatore di Riparazione.}
+\end{minipage}
+
 \subsection{Select New Population}
 
+Una volta completata la fase di Riparazione e quindi con un'insieme di soluzioni
+sicuramente accettabili, và selezionata la nuova popolazione da passare alla
+generazione successiva dell'algoritmo genetico. Per farlo è stata implementata
+la strategia in cui \textit{sopravvivono i migliori} (un caso particolare
+dell'elitismo). In questa fase vengono scelti i migliori individui, in base alla
+fitness, della popolazione indipendentemente se sono \textquote*{figli} o
+\textquote*{genitori} (non conta quindi l'età).
+
+\begin{minipage}{\textwidth}
+    \begin{lstlisting}
+PROCEDURE select_new_population
+    INPUT:
+        population: Actual population
+        children: Repair Phase Result
+        num_elem: max population length
+
+    total_solutions <- population + children
+    total_fitnesses <- compute fitness value for all total_solutions
+
+    total_solutions <- sort by fitness value (desc)
+    total_fitnesses <- sort by fitness value (dec)
+
+    population <- total_solutions[0...num_elem]
+    fitnesses <- total_fitnesses[0...num_elem]
+END PROCEDURE
+\end{lstlisting}
+    \captionof{lstlisting}{Pseudocodice della fase di selezione della nuova popolazione.}
+\end{minipage}
+
 \section{Stima dei Parametri}
+
+Il punto cruciale quando si esegue un algoritmo genetico è l'individuazione dei
+vari parametri che lo caratterizzano.
+
+\begin{itemize}
+    \item \verb|pcross| (\textit{Crossover Probability}): probabilità di
+          effettuare il crossover di un elemento del Mating Pool (generalmente è
+          elevata),
+    \item \verb|pmut| (\textit{Mutation Probability}): probabilità di mutare un
+          singolo gene di un elemento dell'insieme dei figli generato dalla fase
+          di Crossover (generalmente è bassa),
+    \item \verb|ngen| (\textit{Max Generation Number}): numero di Generazioni
+          dopo il quale l'algoritmo si ferma,
+    \item \verb|plen| (\textit{Population Length}): lunghezza della popolazione,
+    \item \verb|tk| (\textit{Tournaments k}): massimo numero di elementi tra cui
+          scegliere il migliore durante i tornei.
+\end{itemize}
+
+
+
 \section{Valutazione delle Performance}
 
 % \section{Nome del capitolo}
