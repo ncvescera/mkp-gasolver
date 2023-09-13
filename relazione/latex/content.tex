@@ -18,14 +18,13 @@ Questo problema può essere formalmente sintetizzato come segue:
 
 con $x_j = \{0, 1\}$, $n$ il numero di oggetti, $m$ il numero di vincoli, $b$ il limite massimo per ogni vincolo,
 $r$ il valore per ogni singolo vincolo di ogni oggetto.
-Il problema verrà risolto mediante l'implementazione di un Algoritmo Genetico.
 
 \section{Istanze del Problema}
 
 L'algoritmo per la risoluzione di questo problema verrà testato utilizzando il dataset
 \href{http://people.brunel.ac.uk/~mastjjb/jeb/orlib/mknapinfo.html}{OR-Library}: una
 raccolta di varie istanze, di differenti dimensioni, per una svariata moltitudine di
-problemi. Una singola istanza di presenta come segue:
+problemi. Una singola istanza si presenta come segue:
 
 \begin{lstlisting}[caption={Esempio di Istanza di un problema MKP con 6 oggetti e 10 vincoli.}]
 6
@@ -52,17 +51,20 @@ numero di parametri. La penultima riga indica il valore massimo per ogni paramet
 il vincolo che non si può superare) e
 l'ultima il valore della soluzione ottimale.
 
-\begin{lstlisting}[caption={Rappresentazione sotto forma tabellare dell'istanza precedente}]
-    ID  f0    f1    f2    f3    f4    f5   f6   f7   f8   f9   Value
-    0   8.0   8.0   3.0   5.0   5.0   5.0  0.0  3.0  3.0  3.0   100.0
-    1  12.0  12.0   6.0  10.0  13.0  13.0  0.0  0.0  2.0  2.0   600.0
-    2  13.0  13.0   4.0   8.0   8.0   8.0  0.0  4.0  4.0  4.0  1200.0
-    3  64.0  75.0  18.0  32.0  42.0  48.0  0.0  0.0  0.0  8.0  2400.0
-    4  22.0  22.0   6.0   6.0   6.0   6.0  8.0  8.0  8.0  8.0   500.0
-    5  41.0  41.0   4.0  12.0  20.0  20.0  0.0  0.0  4.0  4.0  2000.0
-\end{lstlisting}
-
-Prova di testo scritto e aggiornato di nuovo
+\begin{table}[H]
+    \centering
+    \begin{tabular}{||c||c||c||c||c||c||c||c||c||c||c||c||}
+        \textbf{ID} & \textbf{f0} & \textbf{f1} & \textbf{f2} & \textbf{f3} & \textbf{f4} & \textbf{f5} & \textbf{f6} & \textbf{f7} & \textbf{f8} & \textbf{f9} & \textbf{Value} \\
+        \hline
+        0           & 8.0         & 8.0         & 3.0         & 5.0         & 5.0         & 5.0         & 0.0         & 3.0         & 3.0         & 3.0         & 100.0          \\
+        1           & 12.0        & 12.0        & 6.0         & 10.0        & 13.0        & 13.0        & 0.0         & 0.0         & 2.0         & 2.0         & 600.0          \\
+        2           & 13.0        & 13.0        & 4.0         & 8.0         & 8.0         & 8.0         & 0.0         & 4.0         & 4.0         & 4.0         & 1200.0         \\
+        3           & 64.0        & 75.0        & 18.0        & 32.0        & 42.0        & 48.0        & 0.0         & 0.0         & 0.0         & 8.0         & 2400.0         \\
+        4           & 22.0        & 22.0        & 6.0         & 6.0         & 6.0         & 6.0         & 8.0         & 8.0         & 8.0         & 8.0         & 500.0          \\
+        5           & 41.0        & 41.0        & 4.0         & 12.0        & 20.0        & 20.0        & 0.0         & 0.0         & 4.0         & 4.0         & 2000.0         \\
+    \end{tabular}
+    \caption{Rappresentazione sotto forma tabellare dell'istanza precedente}
+\end{table}
 
 \section{Implementazione}
 
@@ -373,24 +375,187 @@ vari parametri che lo caratterizzano.
           scegliere il migliore durante i tornei.
 \end{itemize}
 
+Per la stima di quest'ultimi è stato selezionato un dataset di \textit{Tuning},
+composto da 11 istanze più o meno grandi, che meglio rappresentavano il dataset
+di tutte le istanze a disposizione. In questo dataset abbiamo una varietà di
+istanze molto vasta, possiamo trovarne alcune che hanno 6 oggetti e 10 parametri
+fino ad altre con oltre i 100 oggetti. Di seguito una tabella riassuntiva.
 
+\begin{table}[H]
+    \centering
+    \begin{tabular}{||c||c||c||}
+        \textbf{file}    & \textbf{Oggetti} & \textbf{Parametri} \\
+        \hline
+        \verb|MKP01.txt| & 6                & 10                 \\
+        \verb|MKP03.txt| & 15               & 10                 \\
+        \verb|MKP05.txt| & 28               & 10                 \\
+        \verb|MKP07.txt| & 50               & 5                  \\
+        \verb|MKP11.txt| & 28               & 2                  \\
+        \verb|MKP17.txt| & 105              & 2                  \\
+        \verb|MKP21.txt| & 30               & 5                  \\
+        \verb|MKP23.txt| & 40               & 5                  \\
+        \verb|MKP33.txt| & 60               & 5                  \\
+        \verb|MKP41.txt| & 80               & 5                  \\
+        \verb|MKP47.txt| & 90               & 5
+    \end{tabular}
+    \caption{Contenuto del dataset di Tuning.}
+\end{table}
+
+Per ogni file nel dataset è stato eseguito l'algoritmo 5 volte e sono stati
+salvati i risultati: nome del file, soluzione trovata (\textit{found}),
+soluzione originale (\textit{target}), un bit per indicare il successo e la
+differenza tra \textit{target} e \textit{found}. Sono stati poi scelti altri
+parametri e rieseguita la fase di tuning.
+Per ogni esecuzione della fase di tuning si ottiene un file di
+questo tipo:\\
+
+\begin{minipage}{\textwidth}
+    \begin{lstlisting}
+,file,gen,found,target,success,diff
+0,data/MKP01.txt,52,3800.0,3800.0,True,0.0
+1,data/MKP01.txt,1,3800.0,3800.0,True,0.0
+2,data/MKP01.txt,0,3800.0,3800.0,True,0.0
+3,data/MKP01.txt,48,3800.0,3800.0,True,0.0
+4,data/MKP01.txt,87,3800.0,3800.0,True,0.0
+5,data/MKP03.txt,20,3915.0,4015.0,False,100.0
+\end{lstlisting}
+    \captionof{lstlisting}{File risultante da una esecuzione della fase di Tuning.}
+\end{minipage}\\
+
+Sono stati selezionati i seguenti parametri e utilizzati per eseguire la fase di
+Tuning.
+
+\begin{table}[H]
+    \centering
+    \begin{tabular}{||c||c||c||c||c||}
+        \textbf{pmut} & \textbf{pcross} & \textbf{ngen} & \textbf{plen} & \textbf{tk} \\
+        \hline
+        0.01          & 0.90            & 100           & 16            & 5           \\
+        0.02          & 0.97            & 250           & 40            & 31          \\
+        0.02          & 0.97            & 250           & 80            & 40          \\
+        0.02          & 0.97            & 250           & 100           & 40          \\
+        0.03          & 0.97            & 250           & 71            & 33          \\
+        0.05          & 0.97            & 250           & 20            & 7           \\
+        0.05          & 0.97            & 250           & 40            & 31          \\
+        0.05          & 0.97            & 250           & 100           & 61          \\
+        0.05          & 0.99            & 250           & 20            & 16          \\
+        0.05          & 0.99            & 250           & 80            & 50          \\
+        0.05          & 0.99            & 250           & 100           & 80
+    \end{tabular}
+    \caption{Lista dei parametri scelti per essere utilizzati nella fase di Tuning.}
+\end{table}
+
+Per ogni esecuzione poi sono stati generati 2 grafici: il primo ci mostra la
+differenza media, in percentuale, tra \textit{target} e \textit{found}; il
+secondo il numero di successi e fallimenti per ogni file.
+
+\begin{figure}[H]
+
+    \centering
+    \begin{subfigure}{.3\textwidth}
+        \includegraphics[width=\textwidth]{img/tuning/tuning_results_1_90_100_16_5.png}
+    \end{subfigure}
+    \begin{subfigure}{.3\textwidth}
+        \includegraphics[width=\textwidth]{img/tuning/tuning_results_2_97_250_100_40.png}
+    \end{subfigure}
+    \begin{subfigure}{.3\textwidth}
+        \includegraphics[width=\textwidth]{img/tuning/tuning_results_2_97_250_40_31.png}
+    \end{subfigure}\\
+
+    \begin{subfigure}{.3\textwidth}
+        \includegraphics[width=\textwidth]{img/tuning/tuning_results_2_97_250_80_40.png}
+    \end{subfigure}
+    \begin{subfigure}{.3\textwidth}
+        \includegraphics[width=\textwidth]{img/tuning/tuning_results_3_97_250_71_33.png}
+    \end{subfigure}
+    \begin{subfigure}{.3\textwidth}
+        \includegraphics[width=\textwidth]{img/tuning/tuning_results_5_97_250_100_61.png}
+    \end{subfigure}\\
+
+    \begin{subfigure}{.3\textwidth}
+        \includegraphics[width=\textwidth]{img/tuning/tuning_results_5_97_250_20_7.png}
+    \end{subfigure}
+    \begin{subfigure}{.3\textwidth}
+        \includegraphics[width=\textwidth]{img/tuning/tuning_results_5_97_250_40_31.png}
+    \end{subfigure}
+    \begin{subfigure}{.3\textwidth}
+        \includegraphics[width=\textwidth]{img/tuning/tuning_results_5_99_250_100_80.png}
+    \end{subfigure}\\
+
+    \begin{subfigure}{.3\textwidth}
+        \includegraphics[width=\textwidth]{img/tuning/tuning_results_5_99_250_20_16.png}
+    \end{subfigure}
+    \begin{subfigure}{.3\textwidth}
+        \includegraphics[width=\textwidth]{img/tuning/tuning_results_5_99_250_80_50.png}
+    \end{subfigure}
+
+    \caption{Grafici ottenuti dalla fase di Tuning.}
+\end{figure}
+
+Dai precedenti grafici si possono individuare i 3 migliori set di parametri che
+verranno utilizzati nella successiva fase di Valutazione delle Performance.
+
+\begin{table}[H]
+    \centering
+    \begin{tabular}{||c||c||c||}
+        \textbf{Parameters}                           & \textbf{Success Ratio (\%)} & \textbf{Max AVG Diff (\%)} \\
+        \hline
+        pmut 0.05;pcross 0.99;ngen 250;plen 100;tk 80 & 36.4                        & 12.0                       \\
+        pmut 0.02;pcross 0.97;ngen 250;plen 100;tk 40 & 32.7                        & 5.0                        \\
+        pmut 0.05;pcross 0.97;ngen 250;plen 100;tk 61 & 32.7                        & 21.0                       \\
+    \end{tabular}
+    \caption{Top 3 set di parametri individuati nella fase di Tuning.\label{tab:param}}
+\end{table}
 
 \section{Valutazione delle Performance}
 
-% \section{Nome del capitolo}
-% \label{sec:capitolo}
-% Aggiungi qui il contenuto della relazione !!\\
-% \ \\
-% Prova codice cmd
-% \begin{lstlisting}[style=cmd]
-%  this is a code in cmd style ...
-% \end{lstlisting}
-% \ \\
-% Prova codice output
-%
-% \begin{lstlisting}[style=output]
-%  this is a code in output style ...
-% \end{lstlisting}
-% \ \\
-% Prova codice inline: \lstinline[style=cmd]|this is an inline code ...|\\
-% \ \\
+Infine, dopo aver individuato i 3 set di parametri che performano meglio, è
+stato scelto un dataset di \textit{Testing} su cui testare le scelte della fase
+precedente.
+
+\begin{table}[H]
+    \centering
+    \begin{tabular}{||c||c||c||}
+        \textbf{file}    & \textbf{Oggetti} & \textbf{Parametri} \\
+        \hline
+        \verb|MKP02.txt| & 10               & 10                 \\
+        \verb|MKP04.txt| & 20               & 10                 \\
+        \verb|MKP06.txt| & 39               & 5                  \\
+        \verb|MKP08.txt| & 60               & 30                 \\
+        \verb|MKP10.txt| & 28               & 2                  \\
+        \verb|MKP12.txt| & 28               & 2                  \\
+        \verb|MKP20.txt| & 30               & 5                  \\
+        \verb|MKP22.txt| & 30               & 5                  \\
+        \verb|MKP24.txt| & 40               & 5                  \\
+        \verb|MKP30.txt| & 50               & 5                  \\
+        \verb|MKP36.txt| & 70               & 5                  \\
+        \verb|MKP40.txt| & 80               & 5                  \\
+        \verb|MKP46.txt| & 90               & 5                  \\
+        \verb|MKP48.txt| & 27               & 4                  \\
+        \verb|MKP50.txt| & 29               & 2                  \\
+        \verb|MKP54.txt| & 28               & 4                  \\
+    \end{tabular}
+    \caption{Contenuto del dataset di Testing.}
+\end{table}
+
+Similmente alla fase di Tuning, per ogni elemento del dataset di Testing è stato
+eseguito l'algoritmo genetico 10 volte, utilizzando i parametri della Tabella
+\ref{tab:param} e salvando sempre i risultati come in precedenza.
+I risultati finali sono riassunti dai seguenti grafici.
+
+
+\begin{figure}[H]
+    \centering
+    \begin{subfigure}{.49\textwidth}
+        \includegraphics[width=\textwidth]{img/eval/evaluation_results_2_97_250_100_40.png}
+    \end{subfigure}
+    \begin{subfigure}{.49\textwidth}
+        \includegraphics[width=\textwidth]{img/eval/evaluation_results_5_97_250_100_61.png}
+    \end{subfigure}\\
+
+    \begin{subfigure}{.5\textwidth}
+        \includegraphics[width=\textwidth]{img/eval/evaluation_results_5_99_250_100_80.png}
+    \end{subfigure}
+
+    \caption{Grafici ottenuti dalla fase di Tuning.}
+\end{figure}
