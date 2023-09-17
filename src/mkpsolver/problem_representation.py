@@ -53,8 +53,7 @@ class MKProblem():
         return self.num_items
 
     def objective_function(self, x: Solution) -> float:
-        # x è una soluzione con 0 elemento non preso, 1 preso
-        return self.df[x == 1]['Value'].sum()  # TODO: ricontrollare
+        return self.df[x == 1]['Value'].sum()
 
     @classmethod
     def from_file(cls, fpath: str, delimiter: str = ','):
@@ -67,7 +66,7 @@ class MKProblem():
             values = np.array(f.readline().strip().split(delimiter),
                               dtype=np.float32)
 
-            # make shure upper constriant limits match the num features len
+            # make sure upper constriant limits match the num features len
             assert len(values) == num_items
 
             num_f = int(f.readline().strip())
