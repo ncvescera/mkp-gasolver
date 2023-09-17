@@ -24,6 +24,7 @@ class GeneticAlgorithm():
         self.pcross = pcross
         self.pmut = pmut
         self.num_gen = num_gen
+        self.tk = tk
 
         lg.debug(f"SOLVER INSTANCE: num_items={self.num_items};"
                  f"num_elem={self.num_elem};"
@@ -120,10 +121,11 @@ class GeneticAlgorithm():
         def roulette_wheel():
             raise NotImplementedError
 
-        def tournament(k: int = 5) -> Solution:
+        def tournament() -> Solution:
             random_select_solutions = [
                 random.randint(0,
-                               len(self.population) - 1) for _ in range(k)
+                               len(self.population) - 1)
+                for _ in range(self.tk)
             ]
 
             # generate a dictioray {solution index : solution fitness}

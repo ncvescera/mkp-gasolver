@@ -2,7 +2,6 @@ import pandas as pd
 import argparse
 from mkpsolver.problem_representation import MKProblem
 from mkpsolver.solver import GeneticAlgorithm
-from tqdm import tqdm
 from multiprocessing import Pool
 from functools import partial
 import matplotlib.pyplot as plt
@@ -20,6 +19,86 @@ TUNING_SET = [
     # "MKP39.txt",
     "MKP41.txt",
     "MKP47.txt",
+]
+
+TUNING_PARAMS = [
+    {
+        "pmut": 0.01,
+        "pcross": 0.90,
+        "ngen": 100,
+        "plen": 16,
+        "tk": 5
+    },
+    {
+        "pmut": 0.02,
+        "pcross": 0.97,
+        "ngen": 250,
+        "plen": 40,
+        "tk": 31
+    },
+    {
+        "pmut": 0.02,
+        "pcross": 0.97,
+        "ngen": 250,
+        "plen": 80,
+        "tk": 40
+    },
+    {
+        "pmut": 0.02,
+        "pcross": 0.97,
+        "ngen": 250,
+        "plen": 100,
+        "tk": 40
+    },
+    {
+        "pmut": 0.03,
+        "pcross": 0.97,
+        "ngen": 250,
+        "plen": 71,
+        "tk": 33
+    },
+    {
+        "pmut": 0.05,
+        "pcross": 0.97,
+        "ngen": 250,
+        "plen": 20,
+        "tk": 7
+    },
+    {
+        "pmut": 0.05,
+        "pcross": 0.97,
+        "ngen": 250,
+        "plen": 40,
+        "tk": 31
+    },
+    {
+        "pmut": 0.05,
+        "pcross": 0.97,
+        "ngen": 250,
+        "plen": 100,
+        "tk": 61
+    },
+    {
+        "pmut": 0.05,
+        "pcross": 0.99,
+        "ngen": 250,
+        "plen": 20,
+        "tk": 16
+    },
+    {
+        "pmut": 0.05,
+        "pcross": 0.99,
+        "ngen": 250,
+        "plen": 80,
+        "tk": 50
+    },
+    {
+        "pmut": 0.05,
+        "pcross": 0.99,
+        "ngen": 250,
+        "plen": 100,
+        "tk": 80
+    },
 ]
 
 DATA_FOLDER = "data"
@@ -46,12 +125,6 @@ def worker(pcross, pmut, plen, ngen, tk, test_file):
 
 
 def tuning(pmut=.01, pcross=.9, ngen=250, plen=70, tk=45):
-    # pmut = .01  # .03, .05
-    # pcross = .9  # .97,
-    # ngen = 250  # 250,
-    # plen = 70  # 57,,,100
-    # tk = 45  # 25, , 15, 61
-
     result = []
 
     for test in TUNING_SET:
@@ -206,6 +279,13 @@ def main(args):
                    pcross=args.crossover_probability,
                    pmut=args.mutation_probability,
                    tk=args.tournament_k)
+        case "ta":
+            for param in TUNING_PARAMS:
+                tuning(ngen=param['ngen'],
+                       plen=param['plen'],
+                       pcross=param['pcross'],
+                       pmut=param['pmut'],
+                       tk=param['tk'])
         case "plot":
             if args.input is None:
                 print("Missing Input file !")
@@ -222,9 +302,10 @@ if __name__ == "__main__":
     parser.add_argument(
         'action',
         type=str,
-        choices=["tuning", "plot"],
+        choices=["tuning", "ta", "plot"],
         help=
-        'Action to run: Tuning Parameters (tuning) or Plotting Results (plot)')
+        'Action to run: Tuning Parameters (tuning), Test on Known Parameters (ta) or Plotting Results (plot)'
+    )
     parser.add_argument('-plen',
                         '--population_lenght',
                         default=16,
